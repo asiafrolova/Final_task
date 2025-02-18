@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/asiafrolova/Final_task/orkestrator_service/internal/application"
+	application "github.com/asiafrolova/Final_task/orkestrator_service/internal/app"
 )
 
 func main() {
