@@ -2,6 +2,8 @@ package repo
 
 import (
 	"fmt"
+
+	orkestrator "github.com/asiafrolova/Final_task/orkestrator_service/pkg/orkestrator"
 )
 
 // Статусы выражений
@@ -12,54 +14,120 @@ var (
 	COMPLETED string = "completed" //выражение успешно вычислено
 )
 
-// Структура выражения
-type Expression struct {
-	Id     string `json:"id"`
-	exp    string `json:"-"`
-	Status string `json:"status"`
-	Result int    `json:"result"`
-}
-
 var (
-	expressionsData map[string]Expression     //Хэш таблица с выражениями (ключ - id)
-	lastID          int                   = 0 //Переменная для присвоения выражениям id
+	expressionsData   map[string]*orkestrator.Expression     //Хэш таблица с выражениями (ключ - id)
+	lastID            int                                = 0 //Переменная для присвоения выражениям id
+	SimpleExpressions chan orkestrator.SimpleExpression      //Канал для простых выражений
+	currentExpression *orkestrator.Expression                //выражение с которым сейчас работаем
 )
 
 func Init() {
 	//Инициализация осуществляемая только один раз
 	if expressionsData == nil {
-		expressionsData = make(map[string]Expression)
+		expressionsData = make(map[string]*orkestrator.Expression)
+	}
+	if SimpleExpressions == nil {
+		SimpleExpressions = make(chan orkestrator.SimpleExpression)
 	}
 }
 
 // Добавления выражения
 func AddExpression(exp string) (string, error) {
-	var validExp bool = CheckExpression(exp)
+	var validExp bool = orkestrator.CheckExpression(exp)
 	if !validExp {
-		return "", ErrInvalidExpression
+		return "", orkestrator.ErrInvalidExpression
 	}
 	currentID := GenerateID()
-	expressionsData[currentID] = Expression{Id: currentID, exp: exp, Status: TODO}
+	expressionsData[currentID] = &orkestrator.Expression{Id: currentID, Exp: exp, Status: TODO}
 	return currentID, nil
 
 }
 
 // Возврат выражения по id
-func GetExpressionByID(id string) (Expression, error) {
+func GetExpressionByID(id string) (*orkestrator.Expression, error) {
 	exp, ok := expressionsData[id]
 	if ok {
 		return exp, nil
 	}
-	return Expression{}, ErrKeyExists
+	return &orkestrator.Expression{}, orkestrator.ErrKeyExists
 }
 
 // Возврат всех выражений
-func GetExpressionsList() []Expression {
-	data := make([]Expression, 0)
+func GetExpressionsList() []orkestrator.Expression {
+	data := make([]orkestrator.Expression, 0)
 	for _, v := range expressionsData {
-		data = append(data, v)
+		data = append(data, *v)
 	}
 	return data
+
+}
+
+// просим положить еще простых выражений канал
+func GetSimpleOperations() {
+	if currentExpression == nil || currentExpression.Status != PENDING {
+		err := SetCurrentExpression()
+		if err != nil {
+			return
+		}
+	}
+
+	for ind, elem := range currentExpression.SimpleExpressions {
+		if elem.Processed {
+			continue
+		}
+
+		newSimpleExpression, err := currentExpression.ConvertExpression(elem.Id)
+		if err == nil {
+			currentExpression.SimpleExpressions[ind].Processed = true
+			go func() {
+				SimpleExpressions <- newSimpleExpression
+			}()
+		}
+	}
+}
+
+// Устанавливаем выражение с которым будем работать
+func SetCurrentExpression() error {
+	for ind, elem := range expressionsData {
+		if elem.Status == TODO {
+			expressionsData[ind].Status = PENDING
+
+			currentExpression = expressionsData[ind]
+			tokenizeString, err := currentExpression.TokenizeString()
+			if err != nil {
+
+				currentExpression.Status = FAILED
+				continue
+			}
+			_, err, _ = currentExpression.SplitExpression(tokenizeString)
+
+			return err
+		}
+	}
+	return orkestrator.ErrNotExpression
+}
+
+// Устанавливаем результат вычисления простого выражения и обновляем статус родительского выражения
+func SetResult(id string, result float64, err error) error {
+	if currentExpression == nil {
+		return orkestrator.ErrNotExpression
+	}
+	if err != nil {
+		currentExpression.Status = FAILED
+		SetCurrentExpression()
+		return orkestrator.ErrInvalidExpression
+	}
+	err = currentExpression.SetResultSimpleExpression(id, result)
+	if err != nil {
+		return err
+	}
+
+	if len(currentExpression.SimpleExpressions) == len(currentExpression.SimpleExpressionsResults) {
+		currentExpression.Status = COMPLETED
+		currentExpression.Result = currentExpression.SimpleExpressionsResults[currentExpression.SimpleExpressions[len(currentExpression.SimpleExpressions)-1].Id]
+		SetCurrentExpression()
+	}
+	return nil
 
 }
 

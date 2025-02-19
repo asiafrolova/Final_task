@@ -7,6 +7,8 @@ import (
 
 	handlers "github.com/asiafrolova/Final_task/orkestrator_service/internal/handlers"
 	logger "github.com/asiafrolova/Final_task/orkestrator_service/internal/logger"
+	"github.com/asiafrolova/Final_task/orkestrator_service/internal/repo"
+	"github.com/asiafrolova/Final_task/orkestrator_service/pkg/orkestrator"
 )
 
 type Config struct {
@@ -28,6 +30,8 @@ type Application struct {
 
 func New() *Application {
 	logger.Init()
+	orkestrator.InitOrkestrator()
+	repo.Init()
 	return &Application{config: ConfigFromEnv()}
 
 }
@@ -38,5 +42,6 @@ func (a *Application) RunServer() error {
 	http.HandleFunc("/api/v1/calculate", handlers.AddExpressionsHandler)
 	http.HandleFunc("/api/v1/expressions", handlers.GetExpressionsListHandler)
 	http.HandleFunc("/api/v1/expressions/:id", handlers.GetExpressionByIDHandler)
+	http.HandleFunc("/internal/task", handlers.GetTaskHandler)
 	return http.ListenAndServe(":"+a.config.Addr, nil)
 }
