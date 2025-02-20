@@ -196,19 +196,20 @@ func (e *Expression) SplitExpression(tokenizeString []string) ([]SimpleExpressio
 
 	}
 	if e.SimpleExpressionsResults == nil {
-		e.SimpleExpressionsResults = make(map[string]float64)
+		e.SimpleExpressionsResults = make(map[string]float64, 0)
 	}
 	//Высший приоритет у скобок
 	ind, containBrackets := FindInStringArr(tokenizeString, "(")
 	for containBrackets {
-		ind2, _ := FindInStringArr(tokenizeString[ind+1:], ")")
-		ind2 += ind
+		//ind2, _ := FindInStringArr(tokenizeString[ind+1:], ")")
+		//ind2 += ind
+		ind2, _ := FindPairBrackets(tokenizeString, ind)
 
-		_, _, id := e.SplitExpression(tokenizeString[ind+1 : ind2+1])
+		_, _, id := e.SplitExpression(tokenizeString[ind+1 : ind2])
 		//Заменяем выражение в скобках на id операции из которой возьмем результат
 		endString := make([]string, 0)
 		if ind2+1 < len(tokenizeString) {
-			endString = tokenizeString[ind2+2:]
+			endString = tokenizeString[ind2+1:]
 		}
 		startString := make([]string, 0)
 		if ind > 0 {
@@ -255,9 +256,11 @@ func (e *Expression) SplitExpression(tokenizeString []string) ([]SimpleExpressio
 		ind2, containDiv = FindInStringArr(tokenizeString, "/")
 
 	}
+
 	//Низший приоритет у операций + и -
 	ind, containAdd := FindInStringArr(tokenizeString, "+")
 	ind2, containSub := FindInStringArr(tokenizeString, "-")
+
 	for containAdd || containSub {
 		//Выбираем сложение или вычитание в зависимости от того какое действие встречается раньше
 		if (ind > ind2 && ind2 != -1) || ind == -1 {
@@ -265,13 +268,16 @@ func (e *Expression) SplitExpression(tokenizeString []string) ([]SimpleExpressio
 			ind2 = ind
 			ind = tmp
 		}
+
 		id := GetID()
+
 		if tokenizeString[ind] == "+" {
 
 			e.SimpleExpressions = append(e.SimpleExpressions, SimpleExpression{Id_parent: e.Id, Id: id, Arg1: tokenizeString[ind-1], Arg2: tokenizeString[ind+1], Operation: tokenizeString[ind], Operation_time: TIME_ADDITION_MS})
 		} else {
 			e.SimpleExpressions = append(e.SimpleExpressions, SimpleExpression{Id_parent: e.Id, Id: id, Arg1: tokenizeString[ind-1], Arg2: tokenizeString[ind+1], Operation: tokenizeString[ind], Operation_time: TIME_SUBTRACTION_MS})
 		}
+
 		//Заменяем выражение на его id
 		endString := make([]string, 0)
 		if ind+2 < len(tokenizeString) {
@@ -291,6 +297,7 @@ func (e *Expression) SplitExpression(tokenizeString []string) ([]SimpleExpressio
 	}
 
 	//возвращаем последовательность выражений
+
 	return e.SimpleExpressions, nil, lastExpID
 
 }
@@ -304,6 +311,22 @@ func FindInStringArr(input []string, item string) (int, bool) {
 
 	}
 	return -1, false
+}
+func FindPairBrackets(input []string, indStartBrackets int) (int, bool) {
+	balance := 0
+	for ind := indStartBrackets; ind < len(input); ind++ {
+		if input[ind] == "(" {
+			balance++
+		} else if input[ind] == ")" {
+			balance--
+		}
+		if balance == 0 {
+			return ind, true
+		}
+	}
+
+	return -1, false
+
 }
 
 func GetID() string {

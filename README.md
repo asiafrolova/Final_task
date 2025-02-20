@@ -10,7 +10,7 @@ curl --location 'localhost:8080/api/v1/calculate' \
 curl --location 'localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --data '{
-  "expression": "(2+2)"
+  "expression": "(3.14*2)"
 }'
 
 ```
@@ -19,7 +19,9 @@ curl --location 'localhost:8080/api/v1/calculate' \
 curl --location 'localhost:8080/api/v1/expressions'
 ```
 ```
-curl --location 'localhost:8080/api/v1/expressions?id=id1'
+curl --location 'localhost:8080/api/v1/expressions?id=id4'
+
+curl --location 'localhost/api/v1/expressions/id4'
 ```
 
 ```
@@ -31,6 +33,15 @@ curl --location 'localhost:8080/internal/task' \
 --header 'Content-Type: application/json' \
 --data '{
   "id": "se2",
-  "result": 4
+  "result": 0,
+  "error":"err"
+ 
 }'
+```
+
+```
+agent_service/cmd go run main.go
+```
+```
+go run ./orkestrator_service/cmd/main.go
 ```

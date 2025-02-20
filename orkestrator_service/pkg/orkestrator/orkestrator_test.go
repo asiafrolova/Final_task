@@ -50,7 +50,8 @@ func TestTokenizeInvalidExpression(t *testing.T) {
 		}
 	}
 }
-func CheckExpressionTest(t *testing.T) {
+func TestCheckExpressionTest(t *testing.T) {
+
 	testCases := []struct {
 		input string
 

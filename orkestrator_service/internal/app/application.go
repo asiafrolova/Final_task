@@ -41,7 +41,7 @@ func (a *Application) RunServer() error {
 	logger.Info(fmt.Sprintf("Server started address: %s", a.config.Addr))
 	http.HandleFunc("/api/v1/calculate", handlers.AddExpressionsHandler)
 	http.HandleFunc("/api/v1/expressions", handlers.GetExpressionsListHandler)
-	http.HandleFunc("/api/v1/expressions/:id", handlers.GetExpressionByIDHandler)
+	http.HandleFunc("/api/v1/expressions/{id}", handlers.GetExpressionByIDHandler)
 	http.HandleFunc("/internal/task", handlers.GetTaskHandler)
 	return http.ListenAndServe(":"+a.config.Addr, nil)
 }
