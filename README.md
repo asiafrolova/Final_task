@@ -30,7 +30,7 @@ curl --location 'localhost:8080/internal/task'
 curl --location 'localhost:8080/internal/task' \
 --header 'Content-Type: application/json' \
 --data '{
-  "id": "se6",
-  "result": 59
+  "id": "se2",
+  "result": 4
 }'
 ```

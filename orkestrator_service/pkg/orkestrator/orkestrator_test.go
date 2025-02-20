@@ -7,7 +7,7 @@ import (
 	"github.com/asiafrolova/Final_task/orkestrator_service/pkg/orkestrator"
 )
 
-func TestTokenizePositive(t *testing.T) {
+func TestTokenizeOK(t *testing.T) {
 	testCases := []struct {
 		input orkestrator.Expression
 
@@ -27,6 +27,26 @@ func TestTokenizePositive(t *testing.T) {
 		}
 		if !reflect.DeepEqual(got, tc.want) {
 			t.Errorf("TokenizeString(%v) = %v, want %v", tc.input, got, tc.want)
+		}
+	}
+}
+func TestTokenizeInvalidExpression(t *testing.T) {
+	testCases := []struct {
+		input orkestrator.Expression
+	}{
+		{orkestrator.Expression{Exp: "1+2**3"}},
+		{orkestrator.Expression{Exp: "(1+2))*3"}},
+		{orkestrator.Expression{Exp: "-1.0.9*(1+2)"}},
+		{orkestrator.Expression{Exp: "2*(~-3)"}},
+		{orkestrator.Expression{Exp: "2*a(-3.14)"}},
+	}
+
+	for _, tc := range testCases {
+		_, err := tc.input.TokenizeString()
+		if err == nil {
+			t.Errorf("TokenizeString(%v) did not return an error", tc.input)
+		} else if err != orkestrator.ErrInvalidExpression {
+			t.Errorf("TokenizeString(%v) returned an unexpected error: %v", tc.input, err)
 		}
 	}
 }

@@ -10,8 +10,8 @@ import (
 var (
 	TODO      string = "Todo"      //выражение ожидает
 	PENDING   string = "Pending"   //выражение выполняется
-	FAILED    string = "failed"    //произошла ошибка
-	COMPLETED string = "completed" //выражение успешно вычислено
+	FAILED    string = "Failed"    //произошла ошибка
+	COMPLETED string = "Completed" //выражение успешно вычислено
 )
 
 var (
@@ -72,12 +72,15 @@ func GetSimpleOperations() {
 	}
 
 	for ind, elem := range currentExpression.SimpleExpressions {
+		//Это выражение уже было отправлено агенту
 		if elem.Processed {
 			continue
 		}
 
 		newSimpleExpression, err := currentExpression.ConvertExpression(elem.Id)
+		//Для выражения посчитаны нужные премененные
 		if err == nil {
+
 			currentExpression.SimpleExpressions[ind].Processed = true
 			go func() {
 				SimpleExpressions <- newSimpleExpression
@@ -89,6 +92,7 @@ func GetSimpleOperations() {
 // Устанавливаем выражение с которым будем работать
 func SetCurrentExpression() error {
 	for ind, elem := range expressionsData {
+
 		if elem.Status == TODO {
 			expressionsData[ind].Status = PENDING
 
@@ -100,10 +104,14 @@ func SetCurrentExpression() error {
 				continue
 			}
 			_, err, _ = currentExpression.SplitExpression(tokenizeString)
-
-			return err
+			if err != nil {
+				currentExpression.Status = FAILED
+				continue
+			}
+			return nil
 		}
 	}
+
 	return orkestrator.ErrNotExpression
 }
 
@@ -115,15 +123,16 @@ func SetResult(id string, result float64, err error) error {
 	if err != nil {
 		currentExpression.Status = FAILED
 		SetCurrentExpression()
-		return orkestrator.ErrInvalidExpression
+		return nil
 	}
 	err = currentExpression.SetResultSimpleExpression(id, result)
 	if err != nil {
 		return err
 	}
-
+	//Для выражения посчитаны все подзадачи
 	if len(currentExpression.SimpleExpressions) == len(currentExpression.SimpleExpressionsResults) {
 		currentExpression.Status = COMPLETED
+		//Ответ лежит в последней подзадаче (последнем действии)
 		currentExpression.Result = currentExpression.SimpleExpressionsResults[currentExpression.SimpleExpressions[len(currentExpression.SimpleExpressions)-1].Id]
 		SetCurrentExpression()
 	}

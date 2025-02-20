@@ -10,10 +10,10 @@ import (
 
 var (
 	lastID                  int = 0
-	TIME_ADDITION_MS        int = 100
-	TIME_SUBTRACTION_MS     int = 100
-	TIME_MULTIPLICATIONS_MS int = 100
-	TIME_DIVISIONS_MS       int = 100
+	TIME_ADDITION_MS        int
+	TIME_SUBTRACTION_MS     int
+	TIME_MULTIPLICATIONS_MS int
+	TIME_DIVISIONS_MS       int
 )
 
 // Структура выражения
@@ -37,6 +37,7 @@ type SimpleExpression struct {
 	Processed      bool   `json:"-"`
 }
 
+// Инициализация
 func InitOrkestrator() {
 	var err error
 	TIME_ADDITION_MS, err = strconv.Atoi(os.Getenv("TIME_ADDITION_MS"))
@@ -123,7 +124,7 @@ func (e *Expression) TokenizeString() ([]string, error) {
 			result = append(result, string(elem))
 			currentNum = ""
 
-		} else {
+		} else if elem == ')' || elem == '(' {
 			//Остаются только скобки
 			if len(currentNum) != 0 {
 				result = append(result, currentNum)
@@ -131,6 +132,8 @@ func (e *Expression) TokenizeString() ([]string, error) {
 
 			}
 			result = append(result, string(elem))
+		} else {
+			return nil, ErrInvalidExpression
 		}
 	}
 	if e.Exp[len(e.Exp)-1] != ')' && len(currentNum) == 0 {

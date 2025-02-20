@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	WAITING_TIME = time.Millisecond * 100
+	WAITING_TIME = time.Millisecond * 100 //Ожидание появление новой задачи для отправки агенту
 )
 
 // Запрос на добавление выражения
@@ -60,6 +60,7 @@ func AddExpressionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	repo.Init()
+
 	id, err := repo.AddExpression(request.Expression)
 	if err != nil {
 		if err == orkestrator.ErrInvalidExpression {
@@ -72,7 +73,7 @@ func AddExpressionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := ResponseAddExpression{Id: id}
-	w.WriteHeader(201)
+	w.WriteHeader(http.StatusOK)
 	res, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError) //Ошибка при сериализации
@@ -86,26 +87,6 @@ func AddExpressionsHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info(fmt.Sprintf("Expression with id %s added", response.Id))
 
-}
-func GetExpressionByIDHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	repo.Init()
-	id := r.URL.Query().Get("id")
-	exp, err := repo.GetExpressionByID(id)
-	if err == orkestrator.ErrKeyExists {
-		http.Error(w, err.Error(), http.StatusNotFound) //Нет такого ключа
-		return
-	} else if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError) //Неизвестная ошибка
-		return
-	}
-	res, err := json.Marshal(exp)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError) //Ошибка при сериализации
-	}
-	w.WriteHeader(200)
-	w.Write(res)
-	logger.Info("Expression by id returned successfully")
 }
 
 // Хендлер для получения списка выражений
@@ -122,16 +103,43 @@ func GetExpressionsListHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError) //Ошибка при сериализации
 	}
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 	logger.Info("List of expressions returned successfully")
 
 }
 
+// Хендлер для получения выражения по id
+func GetExpressionByIDHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	repo.Init()
+	id := r.URL.Query().Get("id")
+	exp, err := repo.GetExpressionByID(id)
+	if err == orkestrator.ErrKeyExists {
+		http.Error(w, err.Error(), http.StatusNotFound) //Нет такого ключа
+		return
+	} else if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError) //Неизвестная ошибка
+		return
+	}
+
+	response := ResponseIDExpression{}
+	response.Expression = *exp
+
+	res, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError) //Ошибка при сериализации
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
+	logger.Info("Expression by id returned successfully")
+}
+
 // Хендлер для отправки задач агенту
 func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
 
+	if r.Method == "POST" {
+		//Переключение на хэндлер получения результата
 		GetResultTaskHandle(w, r)
 		return
 
@@ -142,9 +150,11 @@ func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 	repo.GetSimpleOperations()
 	select {
 	case <-timer.C:
-		w.WriteHeader(404)
+		//Если время истекло отвечаем, что нет задач
+		http.Error(w, orkestrator.ErrNotExpression.Error(), http.StatusNotFound)
 		return
 	case sExp := <-repo.SimpleExpressions:
+		//Задача нашлась
 		response := ResponseGetTask{Task: sExp}
 		res, err := json.Marshal(response)
 		if err != nil {
@@ -152,7 +162,7 @@ func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 		}
 
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 		w.Write(res)
 		logger.Info("Task sent successfully")
 	}
@@ -162,8 +172,8 @@ func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 func GetResultTaskHandle(w http.ResponseWriter, r *http.Request) {
 	request := RequestAddResult{}
 	defer r.Body.Close()
-	w.Header().Set("Content-Type", "application/json")
 
+	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&request)
 	repo.Init()
 
@@ -172,23 +182,32 @@ func GetResultTaskHandle(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity) //Ошибка при десериализации
 		return
 	}
+
 	if request.Err != "" {
+		//Пришла ошибка при вычислении
 		err = repo.SetResult(request.Id, 0, fmt.Errorf(request.Err))
 		if err == orkestrator.ErrKeyExists {
-			w.WriteHeader(http.StatusNotFound)
+			http.Error(w, err.Error(), http.StatusNotFound)
+		} else if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
-			w.WriteHeader(http.StatusInternalServerError)
+			logger.Info("Got an error in the task")
 		}
-		logger.Info("Got an error in the task")
+
 	} else {
 
 		err = repo.SetResult(request.Id, request.Result, nil)
 		if err == orkestrator.ErrKeyExists {
-			w.WriteHeader(http.StatusNotFound)
+			//Пришел несуществующий ключ
+			http.Error(w, err.Error(), http.StatusNotFound)
+
+		} else if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		} else {
-			w.WriteHeader(http.StatusInternalServerError)
+			logger.Info("The task result was successfully written")
 		}
-		logger.Info("The task result was successfully written")
+
 	}
 
 }

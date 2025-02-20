@@ -14,7 +14,7 @@ var (
 )
 
 func Init() {
-	//инициализация только один раз
+	//Инициализация происходит только один раз
 	if globalLogger.log == nil {
 
 		log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
