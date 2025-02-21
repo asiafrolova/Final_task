@@ -91,11 +91,6 @@ func AddExpressionsHandler(w http.ResponseWriter, r *http.Request) {
 
 // Хендлер для получения списка выражений
 func GetExpressionsListHandler(w http.ResponseWriter, r *http.Request) {
-	//Переключение на хендлер по id, если он задан
-	// if r.Form.Has("id") {
-	// 	GetExpressionByIDHandler(w, r)
-	// 	return
-	// }
 	if r.URL.Query().Has("id") {
 		GetExpressionByIDHandler(w, r)
 		return
@@ -117,9 +112,13 @@ func GetExpressionsListHandler(w http.ResponseWriter, r *http.Request) {
 func GetExpressionByIDHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	repo.Init()
-	//id := r.FormValue("id")
-	id := r.URL.Query().Get("id")
+	id := r.PathValue("id")
+	if id == "" && r.URL.Query().Has("id") {
+		id = r.URL.Query().Get("id")
+
+	}
 	exp, err := repo.GetExpressionByID(id)
+	logger.Info(id)
 	if err == orkestrator.ErrKeyExists {
 		http.Error(w, err.Error(), http.StatusNotFound) //Нет такого ключа
 		return

@@ -59,8 +59,10 @@ func TestAddExpressionGetIDHandlerOK(t *testing.T) {
 		if id == "" {
 			t.Fatalf("Invalid id with expression %v", tc.input)
 		}
-		req = httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/expressions?id=%s", id), nil)
+
+		req = httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/expressions?id=%s", id), nil)
 		w = httptest.NewRecorder()
+
 		handlers.GetExpressionByIDHandler(w, req)
 		resp = w.Result()
 		if resp.StatusCode != http.StatusOK {

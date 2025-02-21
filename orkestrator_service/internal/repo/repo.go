@@ -6,14 +6,6 @@ import (
 	orkestrator "github.com/asiafrolova/Final_task/orkestrator_service/pkg/orkestrator"
 )
 
-// Статусы выражений
-var (
-	TODO      string = "Todo"      //выражение ожидает
-	PENDING   string = "Pending"   //выражение выполняется
-	FAILED    string = "Failed"    //произошла ошибка
-	COMPLETED string = "Completed" //выражение успешно вычислено
-)
-
 var (
 	expressionsData   map[string]*orkestrator.Expression     //Хэш таблица с выражениями (ключ - id)
 	lastID            int                                = 0 //Переменная для присвоения выражениям id
@@ -38,7 +30,7 @@ func AddExpression(exp string) (string, error) {
 		return "", orkestrator.ErrInvalidExpression
 	}
 	currentID := GenerateID()
-	expressionsData[currentID] = &orkestrator.Expression{Id: currentID, Exp: exp, Status: TODO}
+	expressionsData[currentID] = &orkestrator.Expression{Id: currentID, Exp: exp, Status: orkestrator.TODO}
 	return currentID, nil
 
 }
@@ -64,7 +56,7 @@ func GetExpressionsList() []orkestrator.Expression {
 
 // просим положить еще простых выражений канал
 func GetSimpleOperations() {
-	if currentExpression == nil || currentExpression.Status != PENDING {
+	if currentExpression == nil || currentExpression.Status != orkestrator.PENDING {
 		err := SetCurrentExpression()
 		if err != nil {
 			return
@@ -93,21 +85,22 @@ func GetSimpleOperations() {
 func SetCurrentExpression() error {
 	for ind, elem := range expressionsData {
 
-		if elem.Status == TODO {
-			expressionsData[ind].Status = PENDING
+		if elem.Status == orkestrator.TODO {
+			expressionsData[ind].Status = orkestrator.PENDING
 
 			currentExpression = expressionsData[ind]
 			tokenizeString, err := currentExpression.TokenizeString()
 			if err != nil {
 
-				currentExpression.Status = FAILED
+				currentExpression.Status = orkestrator.FAILED
 				continue
 			}
 			_, err, _ = currentExpression.SplitExpression(tokenizeString)
 			if err != nil {
-				currentExpression.Status = FAILED
+				currentExpression.Status = orkestrator.FAILED
 				continue
 			}
+			expressionsData[ind].WaitResult()
 			return nil
 		}
 	}
@@ -121,7 +114,7 @@ func SetResult(id string, result float64, err error) error {
 		return orkestrator.ErrNotExpression
 	}
 	if err != nil {
-		currentExpression.Status = FAILED
+		currentExpression.Status = orkestrator.FAILED
 		SetCurrentExpression()
 		return nil
 	}
@@ -131,7 +124,7 @@ func SetResult(id string, result float64, err error) error {
 	}
 	//Для выражения посчитаны все подзадачи
 	if len(currentExpression.SimpleExpressions) == len(currentExpression.SimpleExpressionsResults) {
-		currentExpression.Status = COMPLETED
+		currentExpression.Status = orkestrator.COMPLETED
 		//Ответ лежит в последней подзадаче (последнем действии)
 		currentExpression.Result = currentExpression.SimpleExpressionsResults[currentExpression.SimpleExpressions[len(currentExpression.SimpleExpressions)-1].Id]
 		SetCurrentExpression()

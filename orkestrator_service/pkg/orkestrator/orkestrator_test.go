@@ -39,6 +39,7 @@ func TestTokenizeInvalidExpression(t *testing.T) {
 		{orkestrator.Expression{Exp: "-1.0.9*(1+2)"}},
 		{orkestrator.Expression{Exp: "2*(~-3)"}},
 		{orkestrator.Expression{Exp: "2*a(-3.14)"}},
+		{orkestrator.Expression{Exp: "2-3.14.0)"}},
 	}
 
 	for _, tc := range testCases {

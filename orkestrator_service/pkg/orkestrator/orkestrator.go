@@ -5,6 +5,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 	"unicode"
 )
 
@@ -24,7 +26,18 @@ type Expression struct {
 	Result                   float64            `json:"result"`
 	SimpleExpressions        []SimpleExpression `json:"-"`
 	SimpleExpressionsResults map[string]float64 `json:"-"`
+	Timeout                  int                `json:"-"`
+	mux                      sync.Mutex         `json:"-"`
 }
+
+// Статусы выражений
+var (
+	TODO      string = "Todo"      //выражение ожидает
+	PENDING   string = "Pending"   //выражение выполняется
+	FAILED    string = "Failed"    //произошла ошибка
+	COMPLETED string = "Completed" //выражение успешно вычислено
+	TIMEOUT   string = "Timeout"   //ошибка по таймауту
+)
 
 // Структура подвыражния состящего из двух переменных и операции
 type SimpleExpression struct {
@@ -296,8 +309,9 @@ func (e *Expression) SplitExpression(tokenizeString []string) ([]SimpleExpressio
 
 	}
 
+	//Время максимального вычисление выражения
+	e.Timeout = max(TIME_ADDITION_MS, TIME_DIVISIONS_MS, TIME_MULTIPLICATIONS_MS, TIME_SUBTRACTION_MS) * (len(e.SimpleExpressions) + 2)
 	//возвращаем последовательность выражений
-
 	return e.SimpleExpressions, nil, lastExpID
 
 }
@@ -312,6 +326,8 @@ func FindInStringArr(input []string, item string) (int, bool) {
 	}
 	return -1, false
 }
+
+// Поиск закрывающей скобки для открывающей скобки на позиции indStartBrackets
 func FindPairBrackets(input []string, indStartBrackets int) (int, bool) {
 	balance := 0
 	for ind := indStartBrackets; ind < len(input); ind++ {
@@ -327,6 +343,28 @@ func FindPairBrackets(input []string, indStartBrackets int) (int, bool) {
 
 	return -1, false
 
+}
+
+// Если при вычисление выражения будет начато, но агент не отправит ответ в течение таймаута, вычисление будет остановлено
+func (e *Expression) WaitResult() {
+	go func() {
+		timer := time.NewTimer(time.Millisecond * time.Duration(e.Timeout))
+		for {
+			select {
+			case <-timer.C:
+				e.mux.Lock()
+				e.Status = TIMEOUT
+				e.mux.Unlock()
+				return
+			default:
+				e.mux.Lock()
+				if e.Status != PENDING {
+					return
+				}
+				e.mux.Unlock()
+			}
+		}
+	}()
 }
 
 func GetID() string {

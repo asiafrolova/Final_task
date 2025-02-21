@@ -2,7 +2,7 @@
 curl --location 'localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --data '{
-  "expression": "(2+2)+1+9*(1+2+3)"
+  "expression": "(2+2)+1+9*(1+2+3.00)"
 }'
 
 ```
@@ -19,9 +19,9 @@ curl --location 'localhost:8080/api/v1/calculate' \
 curl --location 'localhost:8080/api/v1/expressions'
 ```
 ```
-curl --location 'localhost:8080/api/v1/expressions?id=id4'
+curl --location 'localhost:8080/api/v1/expressions?id=id3'
 
-curl --location 'localhost/api/v1/expressions/id4'
+curl --location 'localhost:8080/api/v1/expressions/id3'
 ```
 
 ```
