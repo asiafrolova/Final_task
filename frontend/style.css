@@ -2,37 +2,90 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    background-color: #1d77a1;
+   background-color: #fff;
     
 }
 .Expression{
     margin: 5px;
-    color: #fff;
+    color: #505050;
+    font-family: "Shantell Sans", serif;
+    
+    font-size: 2.5vh;
 }
 .Header{
-    color:#fff;
+    font-family: "Atkinson Hyperlegible Mono", serif;;
+    color:#000;
     font-size: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 10px;
+    margin-top: 10vh;
     
+}
+#back{
+    margin-top: 5vh;
 }
 .Buttons{
     align-items: center;
     display: flex;
     flex-flow: column;
-    margin: 10px;
+    margin: 10vh;
+    margin-top: 10vh;
     justify-content: center;
     
 }
+
+.input_text{
+    font-size: 2vh;
+    position: relative;
+    border: 2px solid #cac7c7;
+    padding: 3px;
+    border-radius: 30px;
+}
+.input_text:focus{
+    border: 2px solid #cac7c7;
+    padding: 3px;
+    border-radius: 30px;
+    
+}
+p{
+    position: relative;
+    margin: auto;
+}
 .Btn{
+    
+    font-family: "Shantell Sans", serif;
+    
+    font-size: 2.5vh;
     height: 40px;
     border: medium solid #fff;
 
     border-radius: 30px;
-    justify-content: center;
-    width: 15%;
+    align-items: center;
     display: flex;
+    flex-flow: column;
+    justify-content: center;
+    width: auto;
+    padding: 20px;
+   
     margin: 5px;
+    
+    
+}
+
+.Btn:hover{
+    background-color: #cecece;
+}
+#formExp{
+    font-family: "Shantell Sans", serif;
+    
+    font-size: 3vh;
+    border: medium solid #fff;
+    display: flex;
+   justify-content: center;
+   flex-flow: column;
+   flex-direction: column;
+    
+    border-radius: 30px;
 }

@@ -310,7 +310,7 @@ func (e *Expression) SplitExpression(tokenizeString []string) ([]SimpleExpressio
 	}
 
 	//Время максимального вычисление выражения
-	e.Timeout = max(TIME_ADDITION_MS, TIME_DIVISIONS_MS, TIME_MULTIPLICATIONS_MS, TIME_SUBTRACTION_MS) * (len(e.SimpleExpressions) + 2)
+	e.Timeout = max(TIME_ADDITION_MS, TIME_DIVISIONS_MS, TIME_MULTIPLICATIONS_MS, TIME_SUBTRACTION_MS) * (len(e.SimpleExpressions) * 2)
 	//возвращаем последовательность выражений
 	return e.SimpleExpressions, nil, lastExpID
 

@@ -14,9 +14,9 @@ GetListExpressions = function(container){
                 let elem=document.createElement("div")
                 elem.classList=["Expression"]
                 if (exp.status=="Completed"){
-                    elem.innerHTML=`<p>Id: ${exp.id},Статус: ${exp.status}, Результат: ${exp.result}</p>`
+                    elem.innerHTML=`<p>Id: ${exp.id}, Статус: ${exp.status}, Результат: ${exp.result}</p>`
                 }else{
-                    elem.innerHTML=`<p>Id: ${exp.id},Статус: ${exp.status}</p>`
+                    elem.innerHTML=`<p>Id: ${exp.id}, Статус: ${exp.status}</p>`
                 }
                 console.log(exp)
                 container.append(elem)
@@ -140,9 +140,15 @@ BaseTemplae=`
 PostTemplate=`
 
         <form id="formExp">
-            <label for="expression">Введите выражениe</label>
-            <input type="text" name="expression" placeholder="2+2">
-            <input type="submit">
+        <p>
+            <label class="hint"for="expression">Введите выражениe</label>
+            </p>
+            <p>
+            <input class="input_text" type="text" name="expression" placeholder=" 2+2">
+            </p>
+            <p>
+            <button class="Btn" type="submit" >Отправить</button>
+            </p>
           </form>
         <button class="Btn" id="back">
          Back
@@ -152,9 +158,15 @@ PostTemplate=`
 `
 GetByIdTemplate=`
           <form id="formExp">
-            <label for="id">Введите id выражения</label>
-            <input type="text" name="id" placeholder="id1">
-            <input type="submit">
+          <p>
+            <label class="hint" for="id">Введите id выражения</label>
+            </p>
+            <p>
+            <input class="input_text" type="text" name="id" placeholder=" id1">
+            </p>
+            <p>
+            <button class="Btn" type="submit" >Отправить</button>
+            </p>
           </form>
         <button class="Btn" id="back">
          Back
