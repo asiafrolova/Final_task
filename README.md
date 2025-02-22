@@ -8,7 +8,7 @@ Service to parse and calculate simple arithmetic expressions.
 
 ## Installation
 1. Clone the repository to your machine ```git clone https://github.com/asiafrolova/Final_task.git``
-2. Navigate into the project's directory ```cd Final_task/orkestrator_service```
+2. Navigate into the project's directory ```cd Final_task/backend/orkestrator_service```
 3. Download all dependencies ```go mod tidy```
 4. Run app ```go run ./cmd/main.go```
 5. Repeat everything for the agent 

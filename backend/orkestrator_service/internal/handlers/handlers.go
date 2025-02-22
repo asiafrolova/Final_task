@@ -53,6 +53,9 @@ func AddExpressionsHandler(w http.ResponseWriter, r *http.Request) {
 	request := new(RequestAddExpression)
 	defer r.Body.Close()
 	w.Header().Set("Content-Type", "application/json")
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		logger.Error(err.Error())
@@ -91,11 +94,15 @@ func AddExpressionsHandler(w http.ResponseWriter, r *http.Request) {
 
 // Хендлер для получения списка выражений
 func GetExpressionsListHandler(w http.ResponseWriter, r *http.Request) {
+
 	if r.URL.Query().Has("id") {
 		GetExpressionByIDHandler(w, r)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	repo.Init()
 	response := ResponseListExpressions{Expressions: repo.GetExpressionsList()}
 	res, err := json.Marshal(response)
@@ -111,6 +118,9 @@ func GetExpressionsListHandler(w http.ResponseWriter, r *http.Request) {
 // Хендлер для получения выражения по id
 func GetExpressionByIDHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	repo.Init()
 	id := r.PathValue("id")
 	if id == "" && r.URL.Query().Has("id") {

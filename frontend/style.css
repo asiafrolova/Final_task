@@ -1,0 +1,38 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #1d77a1;
+    
+}
+.Expression{
+    margin: 5px;
+    color: #fff;
+}
+.Header{
+    color:#fff;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px;
+    
+}
+.Buttons{
+    align-items: center;
+    display: flex;
+    flex-flow: column;
+    margin: 10px;
+    justify-content: center;
+    
+}
+.Btn{
+    height: 40px;
+    border: medium solid #fff;
+
+    border-radius: 30px;
+    justify-content: center;
+    width: 15%;
+    display: flex;
+    margin: 5px;
+}
