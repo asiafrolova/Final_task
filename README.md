@@ -7,16 +7,27 @@ Service to parse and calculate simple arithmetic expressions.
 - curl, Postman, or any similar app to work with HTTP API   
 
 ## Installation
-1. Clone the repository to your machine ```git clone https://github.com/asiafrolova/Final_task.git``
-2. Navigate into the project's directory ```cd Final_task/backend/orkestrator_service```
-3. Download all dependencies ```go mod tidy```
-4. Run app ```go run ./cmd/main.go```
-5. Repeat everything for the agent 
+1. Clone the repository to your machine `git clone https://github.com/asiafrolova/Final_task.git`
+2. Navigate into the project's directory `cd Final_task/orkestrator_service`
+3. Download all dependencies `go mod tidy`
+4. Run app `go run ./cmd/main.go`
+5. Repeat everything for the agent
+   
+**Fast start**
 ```
-cd ../
-cd Final_task/agent_service
-go run ./cmd/main.go
+git clone https://github.com/asiafrolova/Final_task.git
+cd Final_task/backend/orkestrator_service
 go mod tidy
+go run ./cmd/main.go
+```
+
+In a separate terminal!
+
+```
+cd Final_task/backend/agent_service
+go mod tidy
+go run ./cmd/main.go
+
 ```
 ## How to use
 **Possibilities**
@@ -38,6 +49,7 @@ curl --location 'localhost:8080/api/v1/calculate' \
     "id": "id1"
 }
 `
+
 *GET expression by id*
 ```
 curl --location 'localhost:8080/api/v1/expressions/id1'
@@ -51,6 +63,7 @@ curl --location 'localhost:8080/api/v1/expressions/id1'
             "result": 6.28
         }
 }`
+
 *GET list expressions*
 ```
 curl --location 'localhost:8080/api/v1/expressions'
@@ -71,8 +84,11 @@ curl --location 'localhost:8080/api/v1/expressions'
     ]
 }
 `
+
 **Examples errors**
+
 *Invalid expression*
+
 `curl --location 'localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --data '{
@@ -84,6 +100,7 @@ curl --location 'localhost:8080/api/v1/expressions'
 --data '{
   "expression": "3a-1"
 }'`
+
 `curl --location 'localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --data '{
@@ -91,17 +108,24 @@ curl --location 'localhost:8080/api/v1/expressions'
 }'`
 
 *Failed status*
+
 `curl --location 'localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --data '{
   "expression": "1/0"
 }'`
 
+
 `curl --location 'localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --data '{
   "expression": "3.0.0-1"
 }'`
+
+**Frontend**
+
+Open "frontend" folder, open "index.html" file in any browser
+
 
 
    
