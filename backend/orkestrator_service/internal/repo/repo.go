@@ -2,6 +2,7 @@ package repo
 
 import (
 	"fmt"
+	"strconv"
 
 	orkestrator "github.com/asiafrolova/Final_task/orkestrator_service/pkg/orkestrator"
 )
@@ -93,6 +94,15 @@ func SetCurrentExpression() error {
 			if err != nil {
 
 				currentExpression.Status = orkestrator.FAILED
+				continue
+			} else if len(tokenizeString) == 1 {
+				currentExpression.Status = orkestrator.COMPLETED
+				result, err := strconv.ParseFloat(tokenizeString[0], 64)
+				if err != nil {
+					currentExpression.Status = orkestrator.FAILED
+				} else {
+					currentExpression.Result = result
+				}
 				continue
 			}
 			_, err, _ = currentExpression.SplitExpression(tokenizeString)

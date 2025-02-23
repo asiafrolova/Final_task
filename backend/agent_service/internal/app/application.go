@@ -3,6 +3,7 @@ package application
 import (
 	"bytes"
 	"encoding/json"
+
 	"fmt"
 	"net/http"
 	"os"
@@ -70,10 +71,17 @@ func (a *Application) RunAgent() error {
 			if err == nil {
 
 				jobs <- task
+			} else if err == calculator.ErrServerNotWork {
+				logger.Error(err.Error())
+				return err
 			}
 
 		}
 	}
+	defer close(results)
+	defer close(jobs)
+	return nil
+
 }
 func Worker(id int, jobs <-chan calculator.SimpleExpression, results chan<- calculator.SimpleExpression) {
 	for task := range jobs {
@@ -89,6 +97,9 @@ func Worker(id int, jobs <-chan calculator.SimpleExpression, results chan<- calc
 // Получение задачи
 func (a *Application) GetTask() (calculator.SimpleExpression, error) {
 	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/internal/task", a.config.Addr))
+	if resp == nil {
+		return calculator.SimpleExpression{}, calculator.ErrServerNotWork
+	}
 	if resp.StatusCode == http.StatusOK {
 		response := ResponseTask{}
 		err = json.NewDecoder(resp.Body).Decode(&response)
